@@ -224,7 +224,13 @@ if ( exists $ARGV[0] and $ARGV[0] eq "config" ) {
 	}
 	exit 0;
 } 
-my $mc = new Cache::Memcached { 'servers' => [ "$HOST:$PORT" ] };
+my $server = "";
+if ( $PORT == 0 ){
+	$server = "$HOST";
+} else {
+	$server = "$HOST:$PORT";
+}
+my $mc = new Cache::Memcached { 'servers' => [ $server ] };
 my $stats = $mc->stats ('misc');
 
 foreach my $k ( sort(keys %vars) ) {
@@ -233,7 +239,7 @@ foreach my $k ( sort(keys %vars) ) {
 	if($v{type} eq 'COMPUTE') { next; }
 	my $sg = $v{stat_group};
 	my $sn = $v{stat_name};
-	my $value = $stats->{hosts}->{"$HOST:$PORT"}->{$sg}->{$sn};
+	my $value = $stats->{hosts}->{$server}->{$sg}->{$sn};
 	defined($value) or $value = 'U';
 	print "$k.value ".$value."\n";
 }
